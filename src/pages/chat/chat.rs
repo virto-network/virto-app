@@ -3,6 +3,7 @@ use dioxus_router::prelude::*;
 
 use crate::components::molecules::modal::{ModalForm, RoomType};
 use crate::components::molecules::Modal;
+use crate::hooks::use_listen_invitation::use_listen_invitation;
 use crate::hooks::use_listen_message::use_listen_message;
 use crate::hooks::use_modal::use_modal;
 use crate::pages::route::Route;
@@ -29,6 +30,7 @@ pub fn Chat(cx: Scope) -> Element {
     let navigator = use_navigator(cx);
 
     use_listen_message(cx);
+    use_listen_invitation(cx);
 
     render! {
         if modal.get().show {

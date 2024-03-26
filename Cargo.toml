@@ -27,7 +27,7 @@ dioxus-std = { version = "0.4.0", features = ["i18n"] }
 serde_json = "1.0.103"
 chrono = "0.4.26"
 infer = "0.15.0"
-ruma = { version = "0.7.4", features = ["unstable-sanitize", "unstable-msc2677", "unstable-msc3440", "client"] }
+ruma = { version = "0.7.4", features = ["unstable-sanitize", "unstable-msc2677", "unstable-msc3440", "client", "events"] }
 uuid = "0.8"
 unic-langid = "0.9.1"
 reqwest = "0.11"

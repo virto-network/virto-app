@@ -15,12 +15,14 @@ pub mod hooks {
     pub mod use_client;
     pub mod use_init_app;
     pub mod use_lifecycle;
+    pub mod use_listen_invitation;
     pub mod use_listen_message;
     pub mod use_messages;
     pub mod use_modal;
     pub mod use_notification;
     pub mod use_reply;
     pub mod use_room;
+    pub mod use_rooms;
     pub mod use_send_attach;
     pub mod use_send_message;
     pub mod use_session;
