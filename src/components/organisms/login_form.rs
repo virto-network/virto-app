@@ -11,6 +11,7 @@ pub enum FormLoginEvent {
     Login,
     FilledForm,
     ClearData,
+    Guest,
 }
 
 #[derive(Props)]
@@ -119,6 +120,17 @@ pub fn LoginForm<'a>(cx: Scope<'a, LoginFormProps<'a>>) -> Element<'a> {
                                 },
                                 translate!(i18, "onboard.signup.cta"),
                             }
+                            p {
+                                class: "login-form__cta--another",
+                                translate!(i18, "onboard.guest.description")
+                                button {
+                                    class: "login-form__form__text login__form__text--color button button--tertiary",
+                                    onclick: move |_| {
+                                        cx.props.on_handle.call(FormLoginEvent::Guest)
+                                    },
+                                    translate!(i18, "onboard.guest.cta")
+                                }
+                            }
                         ),
                         BeforeSession::Signup => rsx!(
                             translate!(i18, "onboard.login.description")
@@ -128,6 +140,38 @@ pub fn LoginForm<'a>(cx: Scope<'a, LoginFormProps<'a>>) -> Element<'a> {
                                         cx.props.on_handle.call(FormLoginEvent::Login)
                                 },
                                 translate!(i18, "onboard.login.cta"),
+                            }
+                            p {
+                                class: "login-form__cta--another",
+                                translate!(i18, "onboard.guest.description")
+                                button {
+                                    class: "login-form__form__text login__form__text--color button button--tertiary",
+                                    onclick: move |_| {
+                                        cx.props.on_handle.call(FormLoginEvent::Guest)
+                                    },
+                                    translate!(i18, "onboard.guest.cta")
+                                }
+                            }
+                        ),
+                        BeforeSession::Guest => rsx!(
+                            translate!(i18, "onboard.login.description")
+                            button {
+                                class: "login-form__form__text login__form__text--color button button--tertiary",
+                                onclick: move |_| {
+                                        cx.props.on_handle.call(FormLoginEvent::Login)
+                                },
+                                translate!(i18, "onboard.login.cta"),
+                            }
+                            p {
+                                class: "login-form__cta--another",
+                                translate!(i18, "onboard.signup.description")
+                            button {
+                                class: "login-form__form__text login__form__text--color button button--tertiary",
+                                onclick: move |_| {
+                                        cx.props.on_handle.call(FormLoginEvent::CreateAccount)
+                                },
+                                translate!(i18, "onboard.signup.cta"),
+                            }
                             }
                         )
                     }

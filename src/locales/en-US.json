@@ -1,6 +1,25 @@
 {
     "id": "en-US",
     "texts": {
+        "welcome": {
+            "communities": {
+                "1": "Democracy",
+                "2": "Foundations",
+                "3": "Events",
+                "4": "Web3",
+                "5": "Gamers",
+                "6": "Real State"
+            },
+            "title": "Welcome",
+            "description": "See how you can create a community and learn more about Virto",
+            "cta": {
+                "try": "Try for free",
+                "login": {
+                    "message": "If you already have an account",
+                    "call": "Login"
+                }
+            }
+        },
         "main": {
             "loading": {
                 "title": "Searching for sessions to restore",
@@ -115,6 +134,10 @@
             "signup": {
                 "description": "Don't have an account?",
                 "cta": "Register"
+            },
+            "guest": {
+                "description": "If you just want to look",
+                "cta": "Enter as a guest"
             }
         },
         "chat": {
@@ -122,6 +145,11 @@
                 "join": {
                     "title": "Join a room",
                     "description": "With this command, you can join a room by indicating the id",
+                    "subtitle": "Example"
+                },
+                "rooms": {
+                    "title": "View public rooms",
+                    "description": "With this command, you can view the public rooms on the server",
                     "subtitle": "Example"
                 }
             },
@@ -164,7 +192,8 @@
                     "server": "Unexpected error: (Server)",
                     "sync": "Failed to sync, reload browser",
                     "default_server": "Could not connect to the default server",
-                    "persist": "Failed to persist session"
+                    "persist": "Failed to persist session",
+                    "room_not_found": "Room not found"
                 }
             },
             "listen": {
@@ -194,7 +223,9 @@
             },
             "list": {
                 "home": "Home",
-                "search": "Search"
+                "search": "Search",
+                "invitate": "Invitate",
+                "rooms": "Rooms"
             },
             "menu": {
                 "reply": "Reply",
@@ -213,6 +244,42 @@
                         "invalid_room": "Invalid room",
                         "request_failed": "Request failed"
                     }
+                }
+            },
+            "room-menu": {
+                "leave": "Leave room"
+            },
+            "actions": {
+                "leave": "Could not leave the room"
+            },
+            "preview": {
+                "invited": {
+                    "title": "Do you want to join the room",
+                    "cta": {
+                        "accept": "Start chatting",
+                        "reject": "Reject invitation"
+                    }
+                },
+                "join": {
+                    "title": "To interact with this room you must join",
+                    "cta": {
+                        "accept": "Join the conversation",
+                        "back": "Back"
+                    }
+                },
+                "error": {
+                    "not_found": "Invitation not found",
+                    "accept": "Could not accept the invitation",
+                    "join": "Could not join the room"
+                }
+            },
+            "public": {
+                "title": "Public rooms"
+            },
+            "guest": {
+                "signup": {
+                    "description": "To create a room, you must sign up",
+                    "cta": "Sign Up"
                 }
             }
         },

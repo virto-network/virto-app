@@ -279,6 +279,8 @@ ul {
 .rooms-list {
   padding: 0;
   gap: 0;
+  height: fit-content;
+  min-height: 78px;
 }
 
 .list {
@@ -416,8 +418,24 @@ ul {
   }
 }
 
+@keyframes fade-in-left {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
 .fade-in {
   animation: fade-in 0.5s;
+}
+
+.fade-in-left {
+  animation: fade-in-left 0.2s;
 }
 
 @keyframes fade-in {
@@ -489,6 +507,10 @@ ul {
   margin: 0 0 0 auto;
   background: var(--background-modal);
   right: 10px;
+}
+
+.hover-menu--show {
+  display: block !important;
 }
 
 .hover-menu__option {
@@ -837,6 +859,15 @@ ul {
 }
 
 .nav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 0;
+  background: var(--background);
+  justify-content: space-around;
+}
+
+.nav-wrapper {
   color: var(--text-1);
   display: flex;
   gap: 0.5rem;
@@ -865,8 +896,7 @@ ul {
 }
 
 .helper {
-  width: fit-content;
-  height: fit-content;
+  width: 100%;
   min-height: 100px;
   min-width: 150px;
   max-width: 390px;
@@ -874,17 +904,29 @@ ul {
   border-radius: var(--size-1);
   padding: var(--size-3);
   transition: opacity 0.2s ease-out, background-color 0.2s ease-out;
-  background: var(--background-button);
+  background: var(--background-modal);
   text-align: left;
   border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-0)
 }
 
 .helper__title {
-  padding-top: var(--size-2);
+  font-size: 1.15em;
 }
 
 .helper__description {
-  padding-top: var(--size-0);
+  font-size: 1em;
+}
+
+.helper__subtitle {
+  padding-top: var(--size-2);
+}
+
+.helper__example {
+  font-size: 1em;
 }
 
 .loading__title {
@@ -1462,4 +1504,148 @@ ul {
 
 .room-view-wrapper--skeleton {
   width: 100%;
+}
+
+.room-view--wrap {
+  flex-direction: column;
+  align-items: center;
+  max-width: 200px;
+  box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.05);
+  margin: 5px;
+  border-radius: 12px;
+}
+
+.room-list--wrap {
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 660px;
+  margin: auto;
+}
+
+.room-menu {
+  width: 200px;
+  background: var(--background);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.18);
+  padding: 12px 6px;
+  position: absolute;
+  right: 0;
+  top: 64px;
+  border-radius: 8px;
+}
+
+.room-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.room-menu__cta {
+  border: none;
+  color: var(--text-1);
+  border-radius: 0;
+  padding: 0 8px;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 4px;
+}
+
+.preview-room {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.preview-room__title {
+  margin-top: 24px;
+  color: var(--text-1);
+  text-align: center;
+}
+
+.preview-room__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  width: 60%;
+}
+
+.chat-list__static {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-list__content {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.15);
+  padding: 12px 24px;
+  position: absolute;
+  width: 100%;
+  bottom: 24px;
+  border-radius: 8px;
+  gap: 24px;
+}
+
+.guest__cta {
+  width: 160px;
+}
+
+
+@media only screen and (max-width: 576px) {
+  .page {
+    overflow: hidden;
+  }
+
+  .chat-list {
+    width: fit-content;
+    margin-right: 16px;
+  }
+
+  .chat-list__rooms {
+    width: 70vw;
+    border: 1px solid transparent;
+    background: var(--background-modal);
+    border-radius: 16px;
+  }
+
+  .chat-list__static {
+    width: calc(100vw - 32px);
+    margin: 0 16px;
+  }
+
+  .chat-list__active-room {
+    width: calc(100vw - 32px);
+    margin: 0 16px;
+  }
+
+  .header {
+    position: relative;
+    z-index: 10;
+  }
+
+  .chat-list-wrapper {
+    width: 100vw;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+  }
+
+  .menu {
+    width: 100vw;
+  }
 }

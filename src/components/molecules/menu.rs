@@ -8,6 +8,7 @@ use crate::hooks::use_auth::LogoutError;
 use crate::hooks::use_notification::use_notification;
 use crate::hooks::use_auth::use_auth;
 use crate::hooks::use_client::use_client;
+use crate::hooks::use_session::use_session;
 use crate::pages::route::Route;
 
 #[derive(Props)]
@@ -20,6 +21,7 @@ pub fn Menu<'a>(cx: Scope<'a, MenuProps<'a>>) -> Element<'a> {
     let nav = use_navigator(cx);
     let client = use_client(cx);
     let auth = use_auth(cx);
+    let session = use_session(cx);
     let notification = use_notification(cx);
 
     let key_profile = translate!(i18, "menu.profile");
@@ -30,10 +32,10 @@ pub fn Menu<'a>(cx: Scope<'a, MenuProps<'a>>) -> Element<'a> {
 
     let log_out = move || {
         cx.spawn({
-            to_owned![client, auth, notification, key_logout_error_server, key_chat_common_error_default_server];
+            to_owned![client, auth, session, notification, key_logout_error_server, key_chat_common_error_default_server];
 
             async move {
-                auth.logout(&client).await
+                auth.logout(&client, session.is_guest()).await
             }.unwrap_or_else(move |e: LogoutError| {
                 let message = match e {
                     LogoutError::Failed |LogoutError::DefaultClient => key_logout_error_server,
@@ -47,20 +49,24 @@ pub fn Menu<'a>(cx: Scope<'a, MenuProps<'a>>) -> Element<'a> {
     
     cx.render(rsx! {
         div {
-            class: "menu",
+            class: "menu fade-in-left",
             div {
                 class: "menu__content",
                 ul {
-                    li {
-                        MenuItem {
-                            title: "{key_profile}",
-                            icon: cx.render(rsx!(Icon {height: 24, width: 24, stroke: "var(--text-1)", icon: UserCircle})),
-                            on_click: move |event| {
-                                cx.props.on_click.call(event);
-                                nav.push(Route::Profile {});
-                            }
-                        }
-                     }
+                    if !session.is_guest() {
+                        rsx!(
+                            li {
+                                MenuItem {
+                                    title: "{key_profile}",
+                                    icon: cx.render(rsx!(Icon {height: 24, width: 24, stroke: "var(--text-1)", icon: UserCircle})),
+                                    on_click: move |event| {
+                                        cx.props.on_click.call(event);
+                                        nav.push(Route::Profile {});
+                                    }
+                                }
+                             }
+                        )
+                    }
     
                      li {
                         MenuItem {

@@ -249,12 +249,15 @@ impl UseAuthState {
         *self.logged_in.write() = LoggedIn(option);
     }
 
-    pub async fn logout(&self, client: &UseClientState) -> Result<(), LogoutError> {
-        client
-            .get()
-            .logout()
-            .await
-            .map_err(|_| LogoutError::Failed)?;
+    pub async fn logout(&self, client: &UseClientState, is_guest: bool) -> Result<(), LogoutError> {
+        if !is_guest {
+            client
+                .get()
+                .logout()
+                .await
+                .map_err(|_| LogoutError::Failed)?;
+        }
+
         <LocalStorage as gloo::storage::Storage>::delete("session_file");
 
         client

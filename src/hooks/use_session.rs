@@ -26,6 +26,7 @@ pub struct UseSessionState {
 pub struct UserSession {
     pub user_id: String,
     pub device_id: Option<String>,
+    pub is_guest: bool,
 }
 
 pub enum SessionError {
@@ -44,6 +45,10 @@ impl UseSessionState {
         self.data.read().clone()
     }
 
+    pub fn is_guest(&self) -> bool {
+        self.get().is_some_and(|s|s.is_guest)
+    }
+
     pub async fn whoami(&self, client: Client) -> Result<UserSession, HttpError> {
         let user_id = client.user_id();
         let device_id = client.device_id();
@@ -52,12 +57,23 @@ impl UseSessionState {
             UserSession {
                 user_id: user_id.to_string(),
                 device_id: device_id.map(|id| id.to_string()),
+                is_guest: device_id
+                    .map(|id| {
+                        if id.to_string().contains("guest") {
+                            Some(())
+                        } else {
+                            None
+                        }
+                    })
+                    .flatten()
+                    .is_some(),
             }
         } else {
             let user = client.whoami().await?;
             UserSession {
                 user_id: user.user_id.to_string(),
                 device_id: user.device_id.map(|id| id.to_string()),
+                is_guest: user.is_guest,
             }
         };
 

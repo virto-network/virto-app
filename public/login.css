@@ -33,6 +33,9 @@
     opacity: 0.8;
 }
 
+.button--skeleton {
+    height: 44px;
+}
 
 .input-wrapper {
     height: 2.625rem;
@@ -174,6 +177,10 @@
     margin: auto;
 }
 
+.login-form__title--skeleton {
+    height: 32px;
+}
+
 .login-form__description {
     color: var(--text-subdued);
     text-align: center;
@@ -184,6 +191,10 @@
     line-height: 24px;
     width: 254px;
     margin: auto;
+}
+
+.login-form__description--skeleton {
+    height: 24px;
 }
 
 .login-form__form__head {
@@ -236,4 +247,118 @@
     .login-form {
         width: 100%;
     }
+}
+
+.welcome__content {
+    margin-top: 60px;
+}
+
+.communities {
+    column-count: 3;
+    gap: 1em;
+    margin: auto;
+    position: relative;
+    z-index: 10;
+    max-width: fit-content;
+}
+
+.communities-container {
+    position: relative;
+}
+
+.communities-background {
+    position: absolute;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    box-shadow: 0px 0px 12px -4px rgba(0, 0, 0, 0.2);
+}
+
+.community {
+    border: 1px solid var(--border);
+    background: var(--background-modal);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 12px;
+    gap: 20px;
+    margin: 0 0 1em;
+    max-width: 150px;
+}
+
+.community__blanck {
+    height: 40px;
+}
+
+.community--center::before {
+    content: "";
+    position: absolute;
+    height: 80%;
+    width: 80%;
+    border-radius: 100px;
+    background: transparent;
+    border: 1px solid var(--border);
+    z-index: -1;
+}
+
+.community--center::after {
+    content: "";
+    position: absolute;
+    height: 65%;
+    width: 65%;
+    border-radius: 100px;
+    background: transparent;
+    border: 1px solid var(--border);
+    z-index: -1;
+}
+
+.community__content {
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.community__content--purple {
+    background: var(--gradient-purple);
+}
+
+.community__content--gray {
+    background: var(--gradient-gray);
+}
+
+.community__content--yellow {
+    background: var(--gradient-yellow);
+}
+
+.community__content--blue {
+    background: var(--gradient-blue);
+}
+
+.community__content--pink {
+    background: var(--gradient-pink);
+}
+
+.community__content--green {
+    background: var(--gradient-green);
+}
+
+.community__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-3);
+    padding: 12px;
+}
+
+.community__title {
+    font-size: var(--font-size-1);
+    color: #898A90
+}
+
+.community__title--skeleton {
+    height: var(--font-size-1);
 }

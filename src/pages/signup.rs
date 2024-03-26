@@ -369,6 +369,7 @@ pub fn Signup(cx: Scope) -> Element {
                         FormLoginEvent::FilledForm => on_update_homeserver(),
                         FormLoginEvent::Login => *before_session.write() = BeforeSession::Login,
                         FormLoginEvent::CreateAccount => *before_session.write() = BeforeSession::Signup,
+                        FormLoginEvent::Guest => *before_session.write() = BeforeSession::Guest,
                         FormLoginEvent::ClearData => on_handle_clear(),
                     },
                     body: render!(rsx!(
@@ -405,6 +406,7 @@ pub fn Signup(cx: Scope) -> Element {
                         FormLoginEvent::FilledForm => on_handle_login(),
                         FormLoginEvent::Login => *before_session.write() = BeforeSession::Login,
                         FormLoginEvent::CreateAccount => *before_session.write() = BeforeSession::Signup,
+                        FormLoginEvent::Guest => *before_session.write() = BeforeSession::Guest,
                         FormLoginEvent::ClearData => on_handle_clear(),
                     },
                     body: render!(rsx!(
@@ -471,6 +473,7 @@ pub fn Signup(cx: Scope) -> Element {
                                         FormLoginEvent::FilledForm => on_handle_captcha(),
                                         FormLoginEvent::Login => *before_session.write() = BeforeSession::Login,
                                         FormLoginEvent::CreateAccount => *before_session.write() = BeforeSession::Signup,
+                                        FormLoginEvent::Guest => *before_session.write() = BeforeSession::Guest,
                                         FormLoginEvent::ClearData => on_handle_clear()
 
                                     },

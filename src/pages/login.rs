@@ -262,7 +262,8 @@ pub fn Login(cx: Scope) -> Element {
         FormLoginEvent::FilledForm => on_handle_login_clone(),
         FormLoginEvent::Login => *before_session.write() = BeforeSession::Login,
         FormLoginEvent::CreateAccount => *before_session.write() = BeforeSession::Signup,
-        FormLoginEvent::ClearData => on_handle_clear_clone()
+        FormLoginEvent::Guest => *before_session.write() = BeforeSession::Guest,
+        FormLoginEvent::ClearData => on_handle_clear_clone(),
     };
 
     render!(

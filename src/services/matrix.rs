@@ -1,6 +1,7 @@
 pub mod matrix {
     use std::{
         collections::HashMap,
+        ops::Deref,
         time::{Duration, UNIX_EPOCH},
     };
 
@@ -8,11 +9,11 @@ pub mod matrix {
     use log::info;
 
     use matrix_sdk::{
-        self,
         attachment::AttachmentConfig,
+        config::RequestConfig,
         deserialized_responses::{SyncTimelineEvent, TimelineSlice},
         media::{MediaFormat, MediaRequest, MediaThumbnailSize},
-        room::{MessagesOptions, Room},
+        room::{Invited, MessagesOptions, Room},
         ruma::{
             api::{
                 self,
@@ -45,18 +46,22 @@ pub mod matrix {
     };
     use mime::Mime;
     use ruma::{
-        api::client::message::send_message_event::v3::Response, events::room::message::Thread,
-        OwnedMxcUri, OwnedRoomId,
+        api::client::{
+            account::register::RegistrationKind, directory::get_public_rooms,
+            message::send_message_event::v3::Response,
+        },
+        events::room::message::Thread,
+        OwnedMxcUri, OwnedRoomId, UserId,
     };
     use url::Url;
 
     use crate::{
         components::atoms::room::RoomItem,
         hooks::{use_send_message::SendMessageError, use_session::UserSession},
+        pages::chat::room::group::Profile,
         utils::matrix::{mxc_to_download_uri, mxc_to_thumbnail_uri, ImageMethod, ImageSize},
     };
 
-    use matrix_sdk::ruma::exports::serde_json;
     use matrix_sdk::Session;
 
     use serde::{Deserialize, Serialize};
@@ -216,14 +221,124 @@ pub mod matrix {
         pub spaces: HashMap<RoomItem, Vec<RoomItem>>,
     }
 
+    pub async fn invited_rooms(client: &Client) -> Result<Vec<RoomItem>, String> {
+        let mut rooms = Vec::new();
+
+        for room in client.invited_rooms() {
+            let Ok(item) = format_invited_room(&client, room).await else {
+                continue;
+            };
+
+            rooms.push(item);
+        }
+
+        Ok(rooms)
+    }
+
+    pub async fn format_invited_room(client: &Client, room: Invited) -> Result<RoomItem, String> {
+        let avatar_uri: Option<String> = room
+            .avatar_url()
+            .and_then(|uri| mxc_to_thumbnail_uri(&uri, ImageSize::default(), ImageMethod::CROP));
+
+        let Some(content) = room.create_content() else {
+            return Err(String::from("Content not found"));
+        };
+        log::info!("{:?}", content.creator);
+
+        let Ok(room_creator) = find_user_by_id(content.creator.as_str(), &client).await else {
+            return Err(String::from("User not found"));
+        };
+
+        let room = RoomItem {
+            avatar_uri: avatar_uri,
+            id: room.room_id().to_string(),
+            name: room.name().unwrap_or(room_creator.displayname),
+            is_public: true,
+            is_direct: false,
+        };
+
+        Ok(room)
+    }
+
+    pub async fn public_rooms_and_spaces(
+        client: &Client,
+        limit: Option<u32>,
+        since: Option<&str>,
+        server: Option<&str>,
+    ) -> Result<Conversations, String> {
+        let mut rooms = Vec::new();
+        let mut spaces: HashMap<RoomItem, Vec<RoomItem>> = HashMap::new();
+
+        let limit = limit.map(UInt::from);
+        let server = server.map(|s| s.try_into().ok()).flatten();
+
+        let request = assign!(get_public_rooms::v3::Request::new(), {
+            limit,
+            since,
+            server,
+        });
+
+        let response = client
+            .send(request, Some(RequestConfig::default().force_auth()))
+            .await
+            .map_err(|_| String::from("ServerError"))?;
+
+        for room in response.chunk {
+            let avatar_uri: Option<String> = room.avatar_url.and_then(|uri| {
+                mxc_to_thumbnail_uri(&uri, ImageSize::default(), ImageMethod::CROP)
+            });
+
+            let room = RoomItem {
+                avatar_uri: avatar_uri,
+                id: room.room_id.to_string(),
+                name: room.name.unwrap_or(String::from("Unnamed")),
+                is_public: true,
+                is_direct: false,
+            };
+
+            rooms.push(room);
+        }
+
+        let mut to_list_rooms = vec![];
+
+        for (key, value) in spaces.iter_mut() {
+            rooms.iter().for_each(|room| {
+                let room_homeserver = room.id.split(":").collect::<Vec<&str>>()[1];
+                let space_homeserver = key.id.split(":").collect::<Vec<&str>>()[1];
+
+                if room_homeserver.eq(space_homeserver) && !room.is_direct && !room.id.eq(&key.id) {
+                    value.push(room.clone());
+                } else {
+                    to_list_rooms.push(room.clone());
+                }
+            });
+        }
+
+        if spaces.len() == 0 {
+            to_list_rooms = rooms;
+        }
+
+        Ok(Conversations {
+            rooms: to_list_rooms,
+            spaces: spaces,
+        })
+    }
+
     pub async fn list_rooms_and_spaces(
         client: &Client,
         session_data: UserSession,
     ) -> Conversations {
         let mut rooms = Vec::new();
         let mut spaces = HashMap::new();
+        let rooms_response = client.rooms();
 
-        for room in client.rooms() {
+        for room in rooms_response {
+            if let Room::Left(r) = &room {
+                if !r.is_space() {
+                    continue;
+                }
+            }
+
             let is_direct = room.is_direct();
             let is_space = room.is_space();
 
@@ -314,6 +429,21 @@ pub mod matrix {
         }
     }
 
+    pub enum LeaveRoomError {
+        InvalidRoomId,
+        RoomNotFound,
+        Failed,
+    }
+
+    pub async fn leave_room(client: &Client, id: &str) -> Result<(), LeaveRoomError> {
+        let room_id = RoomId::parse(id).map_err(|_| LeaveRoomError::InvalidRoomId)?;
+        let room = client
+            .get_joined_room(&room_id)
+            .ok_or(LeaveRoomError::RoomNotFound)?;
+
+        room.leave().await.map_err(|_| LeaveRoomError::Failed)
+    }
+
     #[derive(PartialEq, Debug, Clone)]
     pub struct RoomMember {
         pub id: String,
@@ -323,6 +453,50 @@ pub mod matrix {
 
     pub enum RoomMemberError {
         NotFound,
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum FindUserError {
+        InvalidUserId,
+        UserNotFound,
+        InvalidUsername,
+    }
+
+    pub async fn find_user_by_id(id: &str, client: &Client) -> Result<Profile, FindUserError> {
+        let u = UserId::parse(&id).map_err(|_| FindUserError::InvalidUserId)?;
+
+        let u = u.deref();
+
+        let request = matrix_sdk::ruma::api::client::profile::get_profile::v3::Request::new(u);
+
+        let response = client
+            .send(request, None)
+            .await
+            .map_err(|_| FindUserError::UserNotFound)?;
+
+        let displayname = response.displayname.ok_or(FindUserError::InvalidUsername)?;
+
+        let avatar_uri = response
+            .avatar_url
+            .map(|uri| {
+                mxc_to_thumbnail_uri(
+                    &uri,
+                    ImageSize {
+                        width: 48,
+                        height: 48,
+                    },
+                    ImageMethod::CROP,
+                )
+            })
+            .flatten();
+
+        let profile = Profile {
+            displayname,
+            avatar_uri,
+            id: id.to_string(),
+        };
+
+        Ok(profile)
     }
 
     pub async fn room_member(
@@ -369,6 +543,7 @@ pub mod matrix {
         AccountInfo { name, avatar_uri }
     }
 
+    #[derive(Debug)]
     pub enum CreateRoomError {
         RequestFailed,
         InvalidMedia,
@@ -420,10 +595,10 @@ pub mod matrix {
             request.preset = Some(RoomPreset::PrivateChat);
         }
 
-        client
-            .create_room(request)
-            .await
-            .map_err(|_| CreateRoomError::RequestFailed)
+        client.create_room(request).await.map_err(|e| {
+            log::error!("{:?}", e);
+            CreateRoomError::RequestFailed
+        })
     }
 
     #[derive(PartialEq, Debug, Clone)]
@@ -491,6 +666,7 @@ pub mod matrix {
         Thread(TimelineMessageThread),
     }
 
+    #[derive(PartialEq, Debug, Clone)]
     pub enum TimelineError {
         RoomNotFound,
         InvalidLimit,
@@ -655,6 +831,7 @@ pub mod matrix {
         logged_user_id: &str,
         client: &Client,
     ) -> Option<TimelineRelation> {
+        log::info!("{:?}", event);
         let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
             SyncMessageLikeEvent::Original(original),
         )) = event
@@ -1199,6 +1376,56 @@ pub mod matrix {
             }
             Err(error) => Err(Error::Http(error)),
         }
+    }
+
+    pub async fn register_as_guest(homeserver: &str) -> Result<(Client, String), String> {
+        let mut request = RegistrationRequest::new();
+        request.kind = RegistrationKind::Guest;
+
+        let uiaa_dummy = uiaa::Dummy::new();
+        request.auth = Some(uiaa::AuthData::Dummy(uiaa_dummy));
+        log::info!("{:?}", request);
+
+        let client = Client::builder()
+            .homeserver_url(&homeserver)
+            .build()
+            .await
+            .map_err(|_| String::from("Error"))?;
+
+        let Ok(info) = client.register(request.clone()).await else {
+            return Err(String::from("Signup Failed"));
+        };
+
+        log::info!("signup guest result {:?}", info);
+
+        let (Some(access_token), Some(device_id)) = (info.access_token, info.device_id) else {
+            return Err(String::from("Access token or device_id not found"));
+        };
+
+        let (client, client_session) = build_client(homeserver, &info.user_id.to_string())
+            .await
+            .map_err(|_| String::from("Error"))?;
+
+        let user_session = Session {
+            access_token: access_token,
+            refresh_token: info.refresh_token,
+            user_id: info.user_id,
+            device_id: device_id,
+        };
+
+        let serialized_session = serde_json::to_string(&FullSession {
+            client_session,
+            user_session: user_session.clone(),
+            sync_token: None,
+        })
+        .map_err(|_| String::from("Serialization failed"))?;
+
+        client
+            .restore_login(user_session.clone())
+            .await
+            .map_err(|_| String::from("Restore failed"))?;
+
+        Ok((client, serialized_session))
     }
 
     pub async fn login(

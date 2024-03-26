@@ -1,6 +1,25 @@
 {
     "id": "es-ES",
     "texts": {
+        "welcome": {
+            "communities": {
+                "1": "Democracia",
+                "2": "Fundaciones",
+                "3": "Eventos",
+                "4": "Web3",
+                "5": "Gamers",
+                "6": "Finca raíz"
+            },
+            "title": "Te damos la bienvenida",
+            "description": "Mira cómo puedes crear una comunidad y aprender más sobre Virto",
+            "cta": {
+                "try": "Probar gratis",
+                "login": {
+                    "message": "Si ya tienes una cuenta",
+                    "call": "Iniciar sesión"
+                }
+            }
+        },
         "main": {
             "loading": {
                 "title": "Buscando sesiones para restaurar",
@@ -115,13 +134,22 @@
             "signup": {
                 "description": "¿Si no tienes una cuenta?",
                 "cta": "Registrate"
+            },
+            "guest": {
+                "description": "Si solo quieres mirar",
+                "cta": "Entrar como invitado"
             }
         },
         "chat": {
             "helpers": {
                 "join": {
-                    "title": "Unirse a un room",
-                    "description": "Con este comando puedes unirte a un room indicando el id",
+                    "title": "Unirse a una sala",
+                    "description": "Con este comando puedes unirte a una sala indicando el id",
+                    "subtitle": "Ejemplo"
+                },
+                "rooms": {
+                    "title": "Ver salas públicos",
+                    "description": "Con este comando puedes ver las salas públicas en el servidor",
                     "subtitle": "Ejemplo"
                 }
             },
@@ -164,7 +192,8 @@
                     "server": "Error inesperado: (Servidor)",
                     "sync": "No se ha podido sincronizar, recarga el navegador",
                     "default_server": "No se ha podido conectar al servidor por defecto",
-                    "persist": "No se ha podido persistir la sesión"
+                    "persist": "No se ha podido persistir la sesión",
+                    "room_not_found": "Sala no disponible"
                 }
             },
             "listen": {
@@ -194,7 +223,13 @@
             },
             "list": {
                 "home": "Inicio",
-                "search": "Buscar"
+                "search": "Buscar",
+                "invitate": "Invitaciones",
+                "rooms": "Salas",
+                "errors": {
+                    "public_rooms": "No se ha podido mostrar las salas publicas",
+                    "invited_rooms": "No se ha podido mostrar las invitaciones a salas"
+                }
             },
             "menu": {
                 "reply": "Responder",
@@ -213,6 +248,42 @@
                         "invalid_room": "Sala no válida",
                         "request_failed": "Solicitud no procesada"
                     }
+                }
+            },
+            "room-menu": {
+                "leave": "Salir del chat"
+            },
+            "actions": {
+                "leave": "No se ha podido abandonar la sala"
+            },
+            "preview": {
+                "invited": {
+                    "title": "Quieres unirte a la sala",
+                    "cta": {
+                        "accept": "Empezar a chatear",
+                        "reject": "Rechazar invitación"
+                    }
+                },
+                "join": {
+                    "title": "Para interactuar con este room debes unirte",
+                    "cta": {
+                        "accept": "Unirme a la conversación",
+                        "back": "Volver"
+                    }
+                },
+                "error": {
+                    "not_found": "No se ha encontrado la invitación",
+                    "accept": "No se ha podido aceptar la invitación",
+                    "join": "No se ha podido unir a la sala"
+                }
+            },
+            "public": {
+                "title": "Salas públicas"
+            },
+            "guest": {
+                "signup": {
+                    "description": "Para crear una sala debes registrarte",
+                    "cta": "Registrarme"
                 }
             }
         },

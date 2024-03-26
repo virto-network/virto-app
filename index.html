@@ -150,6 +150,14 @@
       --secondary-green-200: #287F6E;
       --secondary-green-300: #174E43;
 
+      /* Gradients */
+      --gradient-purple: linear-gradient(45deg, #8E70C6, #B09ADB);
+      --gradient-gray: linear-gradient(45deg, #E3E3E3, #EDEDED);
+      --gradient-yellow: linear-gradient(45deg, #FEC329, #F7DA72);
+      --gradient-blue: linear-gradient(45deg, #5CC1E1, #93F0FF);
+      --gradient-pink: linear-gradient(45deg, #E4B3C1, #ECBCCC);
+      --gradient-green: linear-gradient(45deg, #30D34D, #66FFA1);
+
     }
 
     :root {
@@ -220,42 +228,76 @@
 
 <body>
   <div id="main">
-    <div id="static-login-form" class="page">
+    <div id="static-login-form" class="page page--clamp">
       <section class="login-form">
-        <div class="login-form__avatar">
-          <div class="login-form__avatar__content">
-            👋
-          </div>
-        </div>
-        <h2 class="login-form__title">
-          Completa tu información
-        </h2>
-        <p class="login-form__description">
-          Crea un mundo, construye tu futuro
-        </p>
-
-        <div class="login-form__form__head">
-          <section class="input__wrapper">
-            <div class="input-wrapper">
-              <input type="text" class="input" placeholder="@user:matrix.org">
+        <div class="communities">
+          <div class="community__blanck"></div>
+          <section class="community">
+            <div class="community__content community__content--purple">
+              <div class="community__icon">
+                🗳️
+              </div>
             </div>
+            <span class="community__title community__title--skeleton">Democracia</span>
           </section>
-
-          <section class="input__wrapper">
-            <div class="input-wrapper">
-              <input type="text" class="input" placeholder="Contrasena">
+          <section class="community">
+            <div class="community__content community__content--gray">
+              <div class="community__icon">
+                💡
+              </div>
             </div>
+            <span class="community__title community__title--skeleton">Fundaciones</span>
+          </section>
+          <section class="community">
+            <div class="community__content community__content--yellow">
+              <div class="community__icon">
+                🪩
+              </div>
+            </div>
+            <span class="community__title community__title--skeleton">Eventos</span>
+          </section>
+          <section class="community community--center">
+            <div class="community__content community__content--green">
+              <div class="community__icon">
+                🎡
+              </div>
+            </div>
+            <span class="community__title community__title--skeleton">Web3</span>
+          </section>
+          <div class="community__blanck"></div>
+          <div class="community__blanck"></div>
+          <section class="community">
+            <div class="community__content community__content--pink">
+              <div class="community__icon">
+                🕹️
+              </div>
+            </div>
+            <span class="community__title community__title--skeleton">Gamers</span>
+          </section>
+          <section class="community">
+            <div class="community__content community__content--blue">
+              <div class="community__icon">
+                🏡
+              </div>
+            </div>
+            <span class="community__title community__title--skeleton">Finca raíz</span>
           </section>
         </div>
-
+        <div class="welcome__content">
+          <h2 class="login-form__title login-form__title--skeleton">
+            Te damos la bienvenida
+          </h2>
+          <p class="login-form__description login-form__description--skeleton">
+            Mira cómo puedes crear una comunidad y aprender más sobre Virto
+          </p>
+        </div>
         <div class="login-form__cta--filled">
-          <button class="button button--primary">Desbloquear</button>
+          <button class="button button--primary button--skeleton">Probar gratis</button>
         </div>
-
         <div class="login-form__cta--action">
           <small class="login-form__form__text">
-            ¿Si no tienes una cuenta?<button
-              class="login-form__form__text login__form__text--color button button--tertiary">Registrate</button>
+            Si ya tienes una cuenta <button
+              class="login-form__form__text login__form__text--color button button--tertiary">Iniciar sesión</button>
           </small>
         </div>
       </section>
