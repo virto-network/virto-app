@@ -18,6 +18,8 @@ pub struct FormRoomEvent {
 pub struct RoomsListProps<'a> {
     rooms: Vec<RoomItem>,
     is_loading: bool,
+    #[props(default = false)]
+    wrap: bool,
     on_submit: EventHandler<'a, FormRoomEvent>,
 }
 
@@ -27,17 +29,20 @@ pub fn RoomsList<'a>(cx: Scope<'a, RoomsListProps<'a>>) -> Element<'a> {
     } else {
         "rooms-list--skeleton"
     };
+    let room_list_wrap = if cx.props.wrap { "room-list--wrap" } else { "" };
 
     cx.render(rsx! {
         section {
-            class:"rooms-list {rooms_list_skeleton} fade-in",
+            class:"rooms-list {room_list_wrap} {rooms_list_skeleton} fade-in",
             if !cx.props.rooms.is_empty() {
                 rsx!(cx.props.rooms.iter().map(|room| {
-                    rsx!(RoomView {
+                    rsx!(
+                        RoomView {
                         key: "{room.id}",
                         displayname: room.name.as_str(),
                         avatar_uri: room.avatar_uri.clone(),
                         description: "",
+                        wrap: cx.props.wrap,
                         on_click: move |_| {
                             cx.props.on_submit.call(FormRoomEvent {
                                 room: CurrentRoom {
@@ -47,13 +52,16 @@ pub fn RoomsList<'a>(cx: Scope<'a, RoomsListProps<'a>>) -> Element<'a> {
                                 },
                             })
                         }
-                    })
+                    }
+                )
                 }))
             } else if cx.props.is_loading {
                 rsx!(
-                    (0..20).map(|_| {
+                    (0..20).map(|i| {
                         rsx!(
-                            RoomViewSkeleton {}
+                            RoomViewSkeleton {
+                                key: "{i}"
+                            }
                         )
                     })
                 )

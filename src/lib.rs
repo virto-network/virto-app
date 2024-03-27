@@ -19,8 +19,11 @@ pub mod hooks {
     pub mod use_messages;
     pub mod use_modal;
     pub mod use_notification;
+    pub mod use_public;
     pub mod use_reply;
     pub mod use_room;
+    pub mod use_room_preview;
+    pub mod use_rooms;
     pub mod use_send_attach;
     pub mod use_send_message;
     pub mod use_session;

@@ -1,33 +1,45 @@
 use dioxus::prelude::*;
 use dioxus_router::prelude::use_navigator;
 use dioxus_std::{i18n::use_i18, translate};
+use futures::TryFutureExt;
 
 use crate::{
     components::{
         atoms::{
             header_main::{HeaderCallOptions, HeaderEvent},
-            Avatar, Close, Header, Icon,
+            ArrowDownCircle, ArrowUpCircle, Avatar, Close, Exit, Header, Icon,
         },
         molecules::{input_message::FormMessageEvent, rooms::CurrentRoom, InputMessage, List},
     },
     hooks::{
         use_chat::{use_chat, UseChat},
+        use_client::use_client,
+        use_lifecycle::use_lifecycle,
         use_messages::use_messages,
+        use_notification::use_notification,
         use_reply::use_reply,
         use_room::use_room,
+        use_rooms::use_rooms,
         use_send_attach::use_send_attach,
         use_send_message::use_send_message,
         use_thread::use_thread,
     },
     pages::{chat::chat::MessageItem, route::Route},
-    services::matrix::matrix::{Attachment, AttachmentStream},
+    services::matrix::matrix::{leave_room, Attachment, AttachmentStream, LeaveRoomError},
 };
 
-pub fn ActiveRoom(cx: Scope) -> Element {
+#[derive(Props)]
+pub struct ActiveRoomProps<'a> {
+    on_back: EventHandler<'a, ()>,
+}
+pub fn ActiveRoom<'a>(cx: Scope<'a, ActiveRoomProps<'a>>) -> Element<'a> {
     let i18 = use_i18(cx);
     let nav = use_navigator(cx);
     let room = use_room(cx);
+    let rooms = use_rooms(cx);
     let messages = use_messages(cx);
+    let client = use_client(cx);
+    let notification = use_notification(cx);
     let send_message = use_send_message(cx);
     let send_attach = use_send_attach(cx);
 
@@ -42,11 +54,34 @@ pub fn ActiveRoom(cx: Scope) -> Element {
         task: _,
     } = use_m.get();
 
+    let messages_lifecycle = messages.clone();
+    let replying_to_lifecycle = replying_to.clone();
+    let threading_to_lifecycle = threading_to.clone();
     let messages = messages.get();
+
+    let key_chat_common_error_room_id = translate!(i18, "chat.common.error.room_id");
+    let key_chat_common_error_room_not_found = translate!(i18, "chat.common.error.room_not_found");
+    let key_chat_actions_leave = translate!(i18, "chat.actions.leave");
 
     let input_placeholder = use_state::<String>(cx, || {
         translate!(i18, "chat.inputs.plain_message.placeholder")
     });
+
+    use_lifecycle(
+        &cx,
+        || {},
+        move || {
+            to_owned![
+                messages_lifecycle,
+                replying_to_lifecycle,
+                threading_to_lifecycle
+            ];
+
+            messages_lifecycle.set(vec![]);
+            replying_to_lifecycle.set(None);
+            threading_to_lifecycle.set(None);
+        },
+    );
 
     let header_event = move |evt: HeaderEvent| {
         to_owned![room];
@@ -55,6 +90,7 @@ pub fn ActiveRoom(cx: Scope) -> Element {
             HeaderCallOptions::CLOSE => {
                 nav.push(Route::ChatList {});
                 room.set(CurrentRoom::default());
+                cx.props.on_back.call(())
             }
             _ => {}
         }
@@ -89,6 +125,46 @@ pub fn ActiveRoom(cx: Scope) -> Element {
         });
     };
 
+    let on_handle_leave = move |_| {
+        cx.spawn({
+            to_owned![
+                client,
+                room,
+                rooms,
+                notification,
+                key_chat_common_error_room_id,
+                key_chat_common_error_room_not_found,
+                key_chat_actions_leave
+            ];
+            async move {
+                let id = room.get().id;
+                leave_room(&client.get(), &id).await?;
+                rooms
+                    .remove_joined(&id)
+                    .map_err(|_| LeaveRoomError::RoomNotFound)?;
+                room.default();
+
+                Ok::<(), LeaveRoomError>(())
+            }
+            .unwrap_or_else(move |e: LeaveRoomError| {
+                let message = match e {
+                    LeaveRoomError::InvalidRoomId => &key_chat_common_error_room_id,
+                    LeaveRoomError::RoomNotFound => &key_chat_common_error_room_not_found,
+                    LeaveRoomError::Failed => &key_chat_actions_leave,
+                };
+
+                notification.handle_error(&message);
+            })
+        })
+    };
+
+    let show_room_menu = use_state(cx, || false);
+    let on_handle_menu = move |_| {
+        let show_value = *show_room_menu.get();
+
+        show_room_menu.set(!show_value);
+    };
+
     cx.render(rsx! {
             div {
                 class: "active-room",
@@ -99,6 +175,56 @@ pub fn ActiveRoom(cx: Scope) -> Element {
                             name: (room.get()).name.to_string(),
                             size: 32,
                             uri: room.get().avatar_uri.clone()
+                        }
+                    )),
+                    menu: render!(rsx!(
+                        section {
+                            button {
+                                class: "nav__cta",
+                                onclick: on_handle_menu,
+                                if *show_room_menu.get() {
+                                    rsx!(
+                                        Icon {
+                                            stroke: "var(--text-1)",
+                                            icon: ArrowUpCircle,
+                                            height: 24,
+                                            width: 24
+                                        }
+                                    )
+                                } else {
+                                    rsx!(
+                                        Icon {
+                                            stroke: "var(--text-1)",
+                                            icon: ArrowDownCircle,
+                                            height: 24,
+                                            width: 24
+                                        }
+                                    )
+                                },
+                            }
+                            if *show_room_menu.get() {
+                                rsx!(
+                                    div {
+                                        class: "room-menu",
+                                        ul {
+                                            li {
+                                                class: "room-menu__item",
+                                                button {
+                                                    class: "room-menu__cta",
+                                                    onclick: on_handle_leave,
+                                                    Icon {
+                                                        stroke: "var(--text-1)",
+                                                        icon: Exit
+                                                    }
+                                                    span {
+                                                        translate!(i18, "chat.room-menu.leave")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                )
+                            }
                         }
                     )),
                     on_event: header_event

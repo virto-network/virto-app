@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 pub enum Variant {
     Primary,
     Secondary,
+    Tertiary,
 }
 
 #[derive(Props)]
@@ -21,6 +22,7 @@ pub fn Button<'a>(cx: Scope<'a, ButtonProps<'a>>) -> Element<'a> {
     let variant = match cx.props.variant {
         Variant::Primary => "button--primary",
         Variant::Secondary => "button--secondary",
+        Variant::Tertiary => "button--tertiary",
     };
 
     let disabled = if cx.props.disabled {

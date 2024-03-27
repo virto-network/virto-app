@@ -16,15 +16,18 @@ pub struct RoomViewProps<'a> {
     #[props(!optional)]
     avatar_uri: Option<String>,
     description: Option<&'a str>,
+    #[props(default = false)]
+    wrap: bool,
     on_click: EventHandler<'a, MouseEvent>,
 }
 
 pub fn RoomView<'a>(cx: Scope<'a, RoomViewProps<'a>>) -> Element<'a> {
     let description = cx.props.description.unwrap_or("");
+    let room_view_wrap = if cx.props.wrap { "room-view--wrap" } else { "" };
 
     cx.render(rsx! {
       div {
-        class: "room-view fade-in",
+        class: "room-view {room_view_wrap} fade-in",
         onclick: move |event| cx.props.on_click.call(event),
 
         Avatar {
