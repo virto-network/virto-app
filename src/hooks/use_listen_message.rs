@@ -43,7 +43,7 @@ pub fn use_listen_message(cx: &ScopeState) -> &UseListenMessagesState {
     let message_dispatch_id =
         use_shared_state::<MessageDispatchId>(cx).expect("Unable to use MessageDispatchId");
     let threading_to = use_thread(cx);
-    let position = use_ref(cx, || None);
+    let position = use_ref::<Option<usize>>(cx, || None);
 
     let task_sender = use_coroutine(cx, |mut rx: UnboundedReceiver<MessageEvent>| {
         to_owned![
@@ -243,6 +243,7 @@ pub fn use_listen_message(cx: &ScopeState) -> &UseListenMessagesState {
                 while let Some(ev) = rx.next().await {
                     let back_messages = messages.get().clone();
                     let value = &message_dispatch_id.read().value;
+                    position.set(None);
 
                     let to_find: Option<(String, Option<String>)> =
                         value.iter().find_map(|(uuid, event_id)| {
@@ -254,9 +255,6 @@ pub fn use_listen_message(cx: &ScopeState) -> &UseListenMessagesState {
                                 }
                             })
                         });
-
-                    info!("to find {:?}", to_find);
-                    info!("back messages {:?}", back_messages);
 
                     if let Some((uuid, _)) = to_find {
                         position.set(back_messages.iter().position(|m| match m {
@@ -292,10 +290,6 @@ pub fn use_listen_message(cx: &ScopeState) -> &UseListenMessagesState {
         ];
 
         async move {
-            if let Err(e) = client.sync_once(SyncSettings::default()).await {
-                log::warn!("{e:?}")
-            };
-
             let me = session.get().ok_or(ListenMessageError::SessionNotFound)?;
 
             if !*handler_added.read() {
